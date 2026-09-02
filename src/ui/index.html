@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CHARTER GUARDIAN</title>
+    <link rel="stylesheet" href="/ui/styles.css" />
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>CHARTER GUARDIAN</h1>
+        <p class="tagline">Give your AI money. Give it a constitution.</p>
+      </div>
+      <div class="chips">
+        <span id="status-chip" class="chip live">LIVE</span>
+        <span id="violations" class="chip">violations 0/2</span>
+        <span id="mode-chip" class="chip">MODE off</span>
+      </div>
+    </header>
+
+    <section class="hero" id="hero">
+      <div class="label">LAST DECISION</div>
+      <div id="decision" class="decision idle">—</div>
+      <p id="why">Waiting for an intent. The trader cannot execute. Guardian is the only gate.</p>
+    </section>
+
+    <main>
+      <article>
+        <h2>CHARTER</h2>
+        <ol id="charter">
+          <li>Spot only</li>
+          <li>BTC, ETH, BNB only</li>
+          <li>Max 10% in one asset</li>
+          <li>No leverage</li>
+          <li>Two counting violations → quarantine</li>
+        </ol>
+      </article>
+      <article>
+        <h2>ACCOUNT / EXPOSURE</h2>
+        <pre id="exposure">NAV —</pre>
+      </article>
+      <article>
+        <h2>LATEST INTENT</h2>
+        <pre id="intent">none</pre>
+      </article>
+      <article>
+        <h2>AUDIT</h2>
+        <pre id="audit">execution.attempted: —</pre>
+      </article>
+    </main>
+
+    <nav>
+      <button data-beat="clean_btc">A · Clean BTC 500</button>
+      <button data-beat="meme_doge">B · DOGE 4000</button>
+      <button data-beat="oversized_btc">C · Oversized BTC</button>
+      <button data-beat="override">D · Ignore charter</button>
+      <button data-beat="leverage">E · 10x futures</button>
+      <button id="reset" class="ghost">Reset demo</button>
+      <button id="kill" class="ghost">Binance kill switch</button>
+    </nav>
+
+    <p class="foot" id="kill-copy">
+      Guardian freeze is local. Binance disconnect / Emergency stop is user-owned UI until an MCP tool is proven.
+    </p>
+    <script src="/ui/main.js" type="module"></script>
+  </body>
+</html>

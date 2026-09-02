@@ -1,0 +1,27 @@
+{
+  "name": "charter-guardian",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Give your AI money. Give it a constitution.",
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "dev": "tsx src/index.ts",
+    "compile:fixture": "tsx src/policy/write-fixture.ts",
+    "dump-mcp": "tsx scripts/dump-mcp-tools.ts"
+  },
+  "dependencies": {
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.9"
+  }
+}

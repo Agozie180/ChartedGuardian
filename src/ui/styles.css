@@ -1,0 +1,43 @@
+:root {
+  --bg: #0b0d10;
+  --card: #14181f;
+  --ink: #e8edf4;
+  --muted: #8b97a8;
+  --green: #1ecb7b;
+  --red: #ff4d4d;
+  --orange: #ff8a3d;
+  --line: #242b36;
+  font-family: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); }
+header, nav, .foot { padding: 16px 24px; }
+header { display: flex; justify-content: space-between; gap: 16px; align-items: center; border-bottom: 1px solid var(--line); }
+h1 { margin: 0; letter-spacing: 0.08em; font-size: 22px; }
+.tagline { margin: 4px 0 0; color: var(--muted); }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip { border: 1px solid var(--line); padding: 4px 10px; border-radius: 999px; font-size: 12px; }
+.chip.live { color: var(--green); border-color: var(--green); }
+.chip.dead { color: var(--red); border-color: var(--red); background: #2a1010; }
+.hero { padding: 28px 24px; }
+.hero.approve { background: #0d2a1c; }
+.hero.block { background: #2a1010; }
+.hero.quarantine { background: #2a1608; }
+.label { color: var(--muted); font-size: 12px; letter-spacing: 0.14em; }
+.decision { font-size: 64px; font-weight: 800; line-height: 1; margin: 8px 0; }
+.decision.approve { color: var(--green); }
+.decision.block { color: var(--red); }
+.decision.quarantine { color: var(--orange); }
+main { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 24px 24px; }
+article { background: var(--card); padding: 16px; border-radius: 12px; border: 1px solid var(--line); }
+h2 { margin: 0 0 8px; font-size: 13px; letter-spacing: 0.12em; color: var(--muted); }
+pre { margin: 0; white-space: pre-wrap; font-size: 13px; }
+nav { display: flex; flex-wrap: wrap; gap: 8px; }
+button { background: #1d2430; color: var(--ink); border: 1px solid var(--line); padding: 10px 12px; border-radius: 8px; cursor: pointer; }
+button:hover { border-color: #4d5b70; }
+button.ghost { opacity: 0.8; }
+.foot { color: var(--muted); font-size: 12px; }
+@media (max-width: 800px) {
+  main { grid-template-columns: 1fr; }
+  .decision { font-size: 40px; }
+}

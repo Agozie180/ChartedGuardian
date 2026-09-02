@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "charter_text": "Spot only.\nTrade only BTC, ETH, and BNB.\nNo single asset may exceed 10% of portfolio NAV.\nNo leverage, no margin, no futures.\nIf the agent violates this Charter twice, quarantine it.",
+  "compiled_at": "2026-09-02T12:21:14.721Z",
+  "compiler": "fixture",
+  "allowed_assets": [
+    "BTC",
+    "ETH",
+    "BNB"
+  ],
+  "allowed_products": [
+    "SPOT"
+  ],
+  "allowed_quote_assets": [
+    "USDT"
+  ],
+  "max_position_pct": 10,
+  "max_leverage": 1,
+  "max_daily_loss_pct": 15,
+  "max_violations": 2,
+  "quarantine_enabled": true,
+  "quarantine_counts_from": [
+    "rule.asset",
+    "rule.leverage",
+    "rule.drift"
+  ],
+  "fail_closed": true,
+  "dust_usdt": 0.01
+}

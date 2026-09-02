@@ -9,15 +9,15 @@ Do **not** paste a chat paraphrase.
 
 - Endpoint: `https://agent.binance.com/mcp/agentic`
 - Transport: Streamable HTTP
-- Client used:
-- Scopes granted:
-- Auth verdict: `GO-CUSTOM` | `GO-HOST` | `NO-GO-MCP` (see `day0-auth-verdict.md`)
+- Client used: custom Node `scripts/dump-mcp-tools.ts` (2026-09-02)
+- Scopes granted: none (unauthenticated)
+- Auth verdict: **not GO-CUSTOM**. `initialize` → **HTTP 401**. Tool names remain UNVERIFIED. Listed-client OAuth is required before `tools/list`.
 
 ## Sizing triple (exit criterion)
 
 | Field | Value |
 |---|---|
-| `minNotional` (BTCUSDT MARKET) | TBD |
+| `minNotional` (BTCUSDT MARKET) | **5 USDT** via public REST `GET /api/v3/exchangeInfo?symbol=BTCUSDT` (`NOTIONAL.applyMinToMarket=true`). Not an MCP tool. |
 | `NAV` (USDT, post-fund) | TBD |
 | `beat1_N` | TBD |
 

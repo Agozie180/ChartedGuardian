@@ -10,9 +10,10 @@ Observation, not a product preference. Do not call GO-CUSTOM on `initialize` 200
 
 ## Recorded on
 
-- Date:
-- Operator:
+- Date: 2026-09-02
+- Operator: local Node dump
 - Geo-eligible account: **yes** (confirmed 2026-09-02)
-- Verdict: TBD
-- Mechanism observed (confirm / elicitation / immediate fill / error):
+- Verdict: **not GO-CUSTOM** (HTTP 401 on unauthenticated `initialize`). GO-HOST pending listed-client OAuth.
+- Mechanism observed: 401 Unauthorized; no tools/list body
 - Probe used as film fill? **No.**
+- Public REST minNotional BTCUSDT MARKET: 5 USDT (no API key)

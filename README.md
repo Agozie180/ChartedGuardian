@@ -49,26 +49,33 @@ We will not invent unpublished Binance tool names. Day 0 dumps the real inventor
 
 ## Status (2026-09-02)
 
-Architecture is specified. Application code is **not** written yet.
+Guardian kernel, tests, one-page demo UI, and a **single execution gate** are in the repo. Live Binance MCP trading is **not** wired: unauthenticated `initialize` against `https://agent.binance.com/mcp/agentic` returns **HTTP 401**. Tool names remain UNVERIFIED. `EXECUTION_MODE` defaults to `off`.
 
 - Full spec: [`docs/design.md`](docs/design.md)
 - Demo script: [`docs/demo-script.md`](docs/demo-script.md)
 - Day 0 MCP recon: [`docs/mcp-tool-inventory.md`](docs/mcp-tool-inventory.md)
 
-## Stack (planned)
+## Stack
 
-TypeScript · pnpm · Zod · Vitest · Vite · `@modelcontextprotocol/client`  
-No database. No swarm. No per-trade LLM. No LangChain / CrewAI / AutoGen.
+TypeScript · pnpm · Zod · Vitest · Node `http` (no Express, no LangChain)  
+JSON files on disk. No database. No swarm. No per-trade LLM.
 
 ## How to run
 
-Not runnable yet. Day 0 starts with:
+```bash
+pnpm install
+pnpm test
+pnpm dev
+```
+
+Open http://127.0.0.1:8787
+
+Default `EXECUTION_MODE=off`: APPROVE is real in policy, **placeOrder is not called**. That is intentional until Day 0 OAuth succeeds.
 
 ```
 claude mcp add binance-mcp-server --transport http https://agent.binance.com/mcp/agentic
+pnpm dump-mcp
 ```
-
-Then dump raw `tools/list` (not a chat paraphrase) into `docs/mcp-tool-inventory.md`.
 
 ## License
 
