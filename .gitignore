@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.pnpm-store/
+.env
+.env.local
+data/runtime/
+data/secrets/
+*.log
+.DS_Store
+Thumbs.db
