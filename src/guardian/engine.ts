@@ -282,7 +282,9 @@ function fallbackPolicy(): Policy {
     max_daily_loss_pct: 100,
     max_violations: 2,
     quarantine_enabled: true,
-    quarantine_counts_from: ["rule.asset", "rule.override"],
+    // Match the real compiled policy; this fallback only runs on an invalid policy,
+    // where every decision is already a fail-closed BLOCK.
+    quarantine_counts_from: ["rule.asset", "rule.leverage", "rule.drift"],
     fail_closed: true,
     dust_usdt: 0.01,
   };

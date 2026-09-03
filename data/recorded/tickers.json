@@ -1,0 +1,11 @@
+{
+  "capturedAt": "2026-09-03",
+  "serverTime": 1788439761400,
+  "source": "Binance Agent OS MCP — spot_tickerPrice, authenticated via Claude Code OAuth (listed-client / GO-HOST)",
+  "note": "Real live prices captured once, replayed deterministically in the demo.",
+  "tickers": [
+    { "symbol": "BTCUSDT", "price": "78370.86000000" },
+    { "symbol": "ETHUSDT", "price": "2417.29000000" },
+    { "symbol": "BNBUSDT", "price": "713.79000000" }
+  ]
+}

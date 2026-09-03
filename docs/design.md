@@ -15,6 +15,13 @@
 
 ---
 
+> **⚠ As-built reconciliation (2026-09-03).** This is the original design (Status: Draft, 2026-09-02). The shipped kernel evolved past two details below; **where they conflict, the code wins.** Source of truth: [`src/policy/fixture-compiler.ts`](../src/policy/fixture-compiler.ts), [`tests/guardian/beats.test.ts`](../tests/guardian/beats.test.ts), and [`demo-script.md`](demo-script.md).
+>
+> 1. **Counting strikes** are `quarantine_counts_from = ["rule.asset", "rule.leverage", "rule.drift"]`, not `["rule.asset", "rule.override"]`. Prompt-override and exposure **BLOCK but are not strikes** — a jailbreak-worded or oversized order is refused, not scored as defiance. So the filmed money-shot lands on the **leverage** beat (2nd counting strike, `rule.leverage`), not the override beat. Verified end-to-end in `EXECUTION_MODE=replay`, 2026-09-03.
+> 2. There is **no separate `rule.threshold` hit id**. Quarantine is decided inside the engine by `violation_count_after >= max_violations` (or a `rule.drift` cluster); `matched_rule_ids` lists the substantive rules that fired.
+>
+> The second quarantine mechanism — **behavioral drift** (`rule.drift`: ≥3 off-Charter intents in the rolling last-5 window) — is implemented and test-verified as a distinct path. See [`demo-script.md`](demo-script.md) § "Two quarantine mechanisms".
+
 ## Overview
 
 Binance Agent OS lets a compatible AI client trade inside a dedicated Agentic sub-account over MCP. Binance sees the resulting order. It does not see the agent's reasoning. Jeff Li (Binance VP Product): *"We really cannot see the reasoning of what the user's action is."* That is the product gap.
