@@ -32,7 +32,8 @@ function mode(): "live" | "replay" | "off" {
 }
 
 function portImpl(): BinancePort {
-  // Replay serves the once-captured Agent OS data; every other mode is inert.
+  // A live MCP adapter is not shipped yet. Keep live mode inert and fail closed
+  // rather than presenting nullPort as a live Binance connection.
   return mode() === "replay" ? recordedPort : nullPort;
 }
 
@@ -51,6 +52,14 @@ function send(res: ServerResponse, status: number, body: unknown) {
     "access-control-allow-origin": "*",
   });
   res.end(json);
+}
+
+function mcpResult(id: unknown, result: unknown) {
+  return { jsonrpc: "2.0", id, result };
+}
+
+function mcpError(id: unknown, code: number, message: string) {
+  return { jsonrpc: "2.0", id, error: { code, message } };
 }
 
 function mime(p: string) {
@@ -83,7 +92,14 @@ async function runIntent(intentRaw: unknown) {
     (mode() === "live" && snapshot.source === "live_mcp") ||
     (mode() === "replay" && snapshot.source === "recorded_live");
   const decided = shouldExecute
-    ? await executeIfApproved({ decision: decision0, intent: intentRaw, port: portImpl() })
+    ? await executeIfApproved({
+        decision: decision0,
+        intent: intentRaw,
+        port: portImpl(),
+        policy,
+        snapshot,
+        log: toLog(agent),
+      })
     : {
         ...decision0,
         execution: {
@@ -115,6 +131,61 @@ export function createAppServer() {
 
       const url = new URL(req.url ?? "/", "http://127.0.0.1");
 
+      // Guardian is the local MCP boundary. Agents connect here and can only
+      // invoke Guardian tools; no upstream Binance trade tool is exposed.
+      if (req.method === "POST" && url.pathname === "/mcp") {
+        const body = (await readJson(req)) as { id?: unknown; method?: string; params?: any };
+        const id = body.id ?? null;
+        if (body.method === "initialize") {
+          send(res, 200, mcpResult(id, {
+            protocolVersion: "2025-03-26",
+            capabilities: { tools: {} },
+            serverInfo: { name: "charter-guardian", version: "0.1.0" },
+          }));
+          return;
+        }
+        if (body.method === "notifications/initialized") {
+          send(res, 202, {});
+          return;
+        }
+        if (body.method === "tools/list") {
+          send(res, 200, mcpResult(id, { tools: [
+            {
+              name: "guardian_trade",
+              description: "Submit a spot trade intent. Guardian validates policy before execution.",
+              inputSchema: { type: "object", additionalProperties: true },
+            },
+            {
+              name: "guardian_state",
+              description: "Read Guardian policy, status, and last decision.",
+              inputSchema: { type: "object", properties: {}, additionalProperties: false },
+            },
+          ] }));
+          return;
+        }
+        if (body.method === "tools/call") {
+          const name = body.params?.name;
+          if (name === "guardian_state") {
+            const policy = loadPolicyFile() ?? compileDemoCharter();
+            const agent = loadAgent();
+            send(res, 200, mcpResult(id, { content: [{ type: "text", text: JSON.stringify({ policy, agent }) }] }));
+            return;
+          }
+          if (name === "guardian_trade") {
+            const decided = await withSingleFlight(() => runIntent(body.params?.arguments ?? {}));
+            send(res, 200, mcpResult(id, {
+              content: [{ type: "text", text: JSON.stringify(decided) }],
+              isError: decided.decision !== "APPROVE",
+            }));
+            return;
+          }
+          send(res, 200, mcpError(id, -32601, `Unknown tool: ${String(name)}`));
+          return;
+        }
+        send(res, 200, mcpError(id, -32601, `Unsupported method: ${String(body.method)}`));
+        return;
+      }
+
       if (req.method === "GET" && (url.pathname === "/" || url.pathname.startsWith("/ui"))) {
         const file =
           url.pathname === "/" || url.pathname === "/ui" || url.pathname === "/ui/"
@@ -137,16 +208,16 @@ export function createAppServer() {
           execution_mode: mode(),
           kill_switch: killSwitchInfo(),
           mcp: {
-            endpoint: "https://agent.binance.com/mcp/agentic",
+            endpoint: "http://127.0.0.1:8787/mcp (Guardian boundary)",
             transport: "streamable-http",
-            auth: "listed-client OAuth via Claude Code — connected 2026-09-03",
+            auth: "local Guardian MCP facade; upstream Binance credentials are not exposed",
             verified_tools: ["spot_tickerPrice", "spot_getAccount", "spot_exchangeInfo"],
             execution_tool: "spot_newOrder (present in inventory; not yet exercised)",
             data_source:
               mode() === "replay"
                 ? "recorded_live — real market/account data captured 2026-09-03, replayed deterministically"
                 : mode() === "live"
-                  ? "live_mcp"
+                  ? "unavailable — live MCP adapter is not installed; execution is fail-closed"
                   : "fixture (EXECUTION_MODE=off)",
           },
         });

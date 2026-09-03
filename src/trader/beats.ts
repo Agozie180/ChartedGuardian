@@ -96,7 +96,6 @@ export const beats = {
     symbol: "BTCUSDT",
     side: "BUY",
     type: "MARKET",
-    amount: 100,
     quantity: 0.001,
     leverage: 10,
     reason: "10x leverage",

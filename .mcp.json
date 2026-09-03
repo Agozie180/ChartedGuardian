@@ -2,7 +2,7 @@
   "mcpServers": {
     "binance": {
       "type": "http",
-      "url": "https://agent.binance.com/mcp/agentic"
+      "url": "http://127.0.0.1:8787/mcp"
     }
   }
 }
