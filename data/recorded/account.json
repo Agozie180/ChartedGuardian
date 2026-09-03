@@ -1,0 +1,12 @@
+{
+  "capturedAt": "2026-09-03",
+  "source": "Binance Agent OS MCP — spot_getAccount (omitZeroBalances=true), authenticated via Claude Code OAuth",
+  "note": "Agentic sub-account. uid + commission redacted for repo safety. Real balances were EMPTY at capture time (sub-account unfunded), so real NAV = 0.",
+  "accountType": "SPOT",
+  "canTrade": true,
+  "canWithdraw": true,
+  "canDeposit": true,
+  "permissions": ["TRD_GRP_068"],
+  "balances": [],
+  "derivedNavUsdt": 0
+}

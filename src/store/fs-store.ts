@@ -17,10 +17,16 @@ import type { ViolationLog } from "../guardian/engine.ts";
 import type { PastIntent } from "../guardian/rules.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
-export const runtimeDir = join(root, "data", "runtime");
-const agentPath = join(runtimeDir, "agent.json");
-const policyPath = join(runtimeDir, "policy.json");
-const auditPath = join(runtimeDir, "audit.jsonl");
+
+// Runtime state directory. Resolved lazily and overridable with GUARDIAN_RUNTIME_DIR
+// so tests never clobber the demo's live agent.json — a QUARANTINED record left on
+// disk by a test would otherwise start the next `pnpm dev` demo frozen.
+export function runtimeDir(): string {
+  return process.env.GUARDIAN_RUNTIME_DIR ?? join(root, "data", "runtime");
+}
+const agentPath = () => join(runtimeDir(), "agent.json");
+const policyPath = () => join(runtimeDir(), "policy.json");
+const auditPath = () => join(runtimeDir(), "audit.jsonl");
 
 export type AgentState = {
   status: "LIVE" | "QUARANTINED";
@@ -31,7 +37,7 @@ export type AgentState = {
 };
 
 function ensureDir() {
-  mkdirSync(runtimeDir, { recursive: true });
+  mkdirSync(runtimeDir(), { recursive: true });
 }
 
 export function defaultAgent(): AgentState {
@@ -46,14 +52,14 @@ export function defaultAgent(): AgentState {
 
 export function loadAgent(): AgentState {
   ensureDir();
-  if (!existsSync(agentPath)) return defaultAgent();
-  return JSON.parse(readFileSync(agentPath, "utf8")) as AgentState;
+  if (!existsSync(agentPath())) return defaultAgent();
+  return JSON.parse(readFileSync(agentPath(), "utf8")) as AgentState;
 }
 
 export function saveAgent(state: AgentState) {
   ensureDir();
   const body = JSON.stringify(state, null, 2) + "\n";
-  const fd = openSync(agentPath, "w");
+  const fd = openSync(agentPath(), "w");
   try {
     writeSync(fd, body);
     fsyncSync(fd);
@@ -63,18 +69,18 @@ export function saveAgent(state: AgentState) {
 }
 
 export function loadPolicyFile(): Policy | null {
-  if (!existsSync(policyPath)) return null;
-  return JSON.parse(readFileSync(policyPath, "utf8")) as Policy;
+  if (!existsSync(policyPath())) return null;
+  return JSON.parse(readFileSync(policyPath(), "utf8")) as Policy;
 }
 
 export function savePolicyFile(policy: Policy) {
   ensureDir();
-  writeFileSync(policyPath, JSON.stringify(policy, null, 2) + "\n");
+  writeFileSync(policyPath(), JSON.stringify(policy, null, 2) + "\n");
 }
 
 export function appendAudit(decision: Decision, intent: unknown) {
   ensureDir();
-  appendFileSync(auditPath, JSON.stringify({ at: new Date().toISOString(), intent, decision }) + "\n");
+  appendFileSync(auditPath(), JSON.stringify({ at: new Date().toISOString(), intent, decision }) + "\n");
 }
 
 export function toLog(agent: AgentState): ViolationLog {
@@ -89,11 +95,7 @@ export function persistDecision(agent: AgentState, decision: Decision, past: Pas
     last_decision: decision,
     updated_at: new Date().toISOString(),
   };
-  if (decision.decision === "QUARANTINE") {
-    saveAgent(next);
-  } else {
-    saveAgent(next);
-  }
+  saveAgent(next);
   return next;
 }
 

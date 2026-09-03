@@ -1,0 +1,19 @@
+{
+  "capturedAt": "2026-09-03",
+  "serverTime": 1788439761400,
+  "source": "Binance Agent OS MCP — spot_exchangeInfo?symbol=BTCUSDT, authenticated via Claude Code OAuth",
+  "note": "Trimmed to the symbol filters we rely on. minNotional confirms the sizing triple via the authenticated path (public REST agreed: 5 USDT).",
+  "symbol": "BTCUSDT",
+  "status": "TRADING",
+  "baseAsset": "BTC",
+  "quoteAsset": "USDT",
+  "baseAssetPrecision": 8,
+  "quoteAssetPrecision": 8,
+  "quoteOrderQtyMarketAllowed": true,
+  "filters": {
+    "PRICE_FILTER": { "minPrice": "0.01000000", "tickSize": "0.01000000" },
+    "LOT_SIZE": { "minQty": "0.00001000", "stepSize": "0.00001000", "maxQty": "9000.00000000" },
+    "MARKET_LOT_SIZE": { "minQty": "0.00000000", "stepSize": "0.00000000", "maxQty": "136.69983733" },
+    "NOTIONAL": { "minNotional": "5.00000000", "applyMinToMarket": true, "maxNotional": "9000000.00000000" }
+  }
+}

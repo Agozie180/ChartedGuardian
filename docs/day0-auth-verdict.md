@@ -10,10 +10,11 @@ Observation, not a product preference. Do not call GO-CUSTOM on `initialize` 200
 
 ## Recorded on
 
-- Date: 2026-09-02
-- Operator: local Node dump
-- Geo-eligible account: **yes** (confirmed 2026-09-02)
-- Verdict: **not GO-CUSTOM** (HTTP 401 on unauthenticated `initialize`). GO-HOST pending listed-client OAuth.
-- Mechanism observed: 401 Unauthorized; no tools/list body
-- Probe used as film fill? **No.**
-- Public REST minNotional BTCUSDT MARKET: 5 USDT (no API key)
+- Date: **2026-09-03** (connection); 2026-09-02 (initial unauthenticated recon)
+- Operator: Claude Code (listed OAuth client)
+- Geo-eligible account: **yes**
+- Verdict: **GO-HOST** — listed-client OAuth (Claude Code) completed; `tools/list` exposed; `spot_getAccount` read the sub-account; `spot_tickerPrice` + `spot_exchangeInfo` returned real data (all captured in [`../data/recorded/`](../data/recorded/)).
+- Trade tool: `spot_newOrder` **present** with schema; **not exercised** (sub-account unfunded, NAV = 0).
+- NOT GO-CUSTOM: unauthenticated custom-Node `initialize` returned HTTP 401; the listed-client path succeeded, so the custom path was not pursued.
+- Probe used as film fill? **No.** No live order placed.
+- Public REST `minNotional` BTCUSDT MARKET: 5 USDT; re-confirmed via authenticated `spot_exchangeInfo` (`NOTIONAL.applyMinToMarket = true`).

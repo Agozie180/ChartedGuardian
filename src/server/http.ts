@@ -7,6 +7,7 @@ import { compileDemoCharter } from "../policy/fixture-compiler.ts";
 import { beats, type BeatId } from "../trader/beats.ts";
 import { executeIfApproved, withSingleFlight } from "../binance/executor.ts";
 import { nullPort } from "../binance/null-port.ts";
+import { recordedPort } from "../binance/recorded-port.ts";
 import { buildSnapshot, invalidateSnapshotCache } from "../binance/snapshot.ts";
 import {
   loadAgent,
@@ -31,7 +32,8 @@ function mode(): "live" | "replay" | "off" {
 }
 
 function portImpl(): BinancePort {
-  return nullPort;
+  // Replay serves the once-captured Agent OS data; every other mode is inert.
+  return mode() === "replay" ? recordedPort : nullPort;
 }
 
 async function readJson(req: IncomingMessage): Promise<unknown> {
@@ -77,7 +79,9 @@ async function runIntent(intentRaw: unknown) {
     leverage: parsed.success ? parsed.data.leverage : undefined,
   };
 
-  const shouldExecute = mode() === "live" && snapshot.source === "live_mcp";
+  const shouldExecute =
+    (mode() === "live" && snapshot.source === "live_mcp") ||
+    (mode() === "replay" && snapshot.source === "recorded_live");
   const decided = shouldExecute
     ? await executeIfApproved({ decision: decision0, intent: intentRaw, port: portImpl() })
     : {
@@ -134,8 +138,16 @@ export function createAppServer() {
           kill_switch: killSwitchInfo(),
           mcp: {
             endpoint: "https://agent.binance.com/mcp/agentic",
-            tools: "UNVERIFIED",
-            note: "Binance MCP initialize returned 401 without OAuth. No tool names invented.",
+            transport: "streamable-http",
+            auth: "listed-client OAuth via Claude Code — connected 2026-09-03",
+            verified_tools: ["spot_tickerPrice", "spot_getAccount", "spot_exchangeInfo"],
+            execution_tool: "spot_newOrder (present in inventory; not yet exercised)",
+            data_source:
+              mode() === "replay"
+                ? "recorded_live — real market/account data captured 2026-09-03, replayed deterministically"
+                : mode() === "live"
+                  ? "live_mcp"
+                  : "fixture (EXECUTION_MODE=off)",
           },
         });
         return;
