@@ -1,6 +1,7 @@
 import type { Decision } from "../decision/schema.ts";
 import { normalizeIntent, TradeIntentInputSchema, type TradeIntent } from "../intent/schema.ts";
 import type { BinancePort } from "./port.ts";
+import { evaluate, type ViolationLog } from "../guardian/engine.ts";
 
 let inFlight = false;
 
@@ -37,17 +38,29 @@ export async function executeIfApproved(args: {
   decision: Decision;
   intent: unknown;
   port: BinancePort;
+  policy: unknown;
+  snapshot: unknown;
+  log: ViolationLog;
 }): Promise<Decision> {
-  if (args.decision.decision !== "APPROVE" || args.decision.agent_status_after !== "LIVE") {
+  const verified = evaluate({
+    policy: args.policy,
+    intent: args.intent,
+    snapshot: args.snapshot,
+    log: args.log,
+  });
+  if (
+    verified.decision !== "APPROVE" ||
+    verified.agent_status_after !== "LIVE" ||
+    args.decision.decision !== "APPROVE" ||
+    args.decision.intent_id !== verified.intent_id ||
+    args.decision.policy_version !== verified.policy_version
+  ) {
     return {
-      ...args.decision,
+      ...verified,
       execution: {
         attempted: false,
         ok: false,
-        skipped_reason:
-          args.decision.decision === "APPROVE"
-            ? "agent_not_live"
-            : `decision_${args.decision.decision}`,
+        skipped_reason: "guardian_recheck_failed",
       },
     };
   }

@@ -6,7 +6,6 @@ export type Hit = { id: string; reason: string };
 
 const OVERRIDE_RE =
   /\b(ignore(?:\s+the)?\s+charter|ignore(?:\s+the)?\s+policy|override(?:\s+the)?\s+(?:charter|policy|rules)|jailbreak|disobey|forget(?:\s+the)?\s+rules|buy\s+now\s+anyway)\b/i;
-const NEGATIVE_RE = /\b(do\s+not|don't|dont|never)\b.{0,24}\b(ignore|override|disobey)\b/i;
 
 const STABLES = new Set(["USDT", "USDC", "FDUSD", "TUSD", "DAI", "BUSD"]);
 
@@ -66,7 +65,7 @@ export function checkQuote(policy: Policy, intent: TradeIntent): Hit | null {
   if (!parsed) {
     return { id: "rule.quote", reason: `cannot parse symbol ${intent.symbol}` };
   }
-  if (!policy.allowed_quote_assets.includes(parsed.quote)) {
+  if (!policy.allowed_quote_assets.some((quote) => quote.toUpperCase() === parsed.quote)) {
     return {
       id: "rule.quote",
       reason: `quote asset ${parsed.quote} is not allowed (Charter quotes: ${policy.allowed_quote_assets.join(", ")}).`,
@@ -78,7 +77,7 @@ export function checkQuote(policy: Policy, intent: TradeIntent): Hit | null {
 export function checkAsset(policy: Policy, intent: TradeIntent): Hit | null {
   const parsed = parseSymbol(intent.symbol, policy.allowed_quote_assets);
   const base = parsed?.base ?? intent.asset;
-  if (!policy.allowed_assets.includes(base)) {
+  if (!policy.allowed_assets.some((asset) => asset.toUpperCase() === base)) {
     return {
       id: "rule.asset",
       reason: `asset_not_allowed: ${base} is not in the Charter.`,
@@ -106,8 +105,13 @@ export function checkLeverage(policy: Policy, intent: TradeIntent): Hit | null {
 export function checkOverride(intent: TradeIntent): Hit | null {
   const text = `${intent.prompt ?? ""} ${intent.reason}`.trim();
   if (!text) return null;
-  if (NEGATIVE_RE.test(text)) return null;
-  if (OVERRIDE_RE.test(text)) {
+  // Remove only an explicitly negated "ignore/override" phrase. Do not let that
+  // exemption hide another override instruction later in the same intent.
+  const withoutNegatedPhrase = text.replace(
+    /\b(?:do\s+not|don't|dont|never)\b.{0,24}\b(?:ignore|override|disobey)\b/gi,
+    "",
+  );
+  if (OVERRIDE_RE.test(withoutNegatedPhrase)) {
     return {
       id: "rule.override",
       reason: "User instruction conflicts with Charter.",
@@ -194,7 +198,7 @@ export function checkDrift(policy: Policy, intent: TradeIntent, recent: PastInte
   const window = [...recent.slice(-4), { asset: intent.asset, product: intent.product, leverage: intent.leverage }];
   let bad = 0;
   for (const item of window) {
-    const assetBad = !policy.allowed_assets.includes(item.asset.toUpperCase());
+    const assetBad = !policy.allowed_assets.some((asset) => asset.toUpperCase() === item.asset.toUpperCase());
     const productBad = item.product !== "SPOT";
     const levBad = (item.leverage ?? 1) > policy.max_leverage;
     if (assetBad || productBad || levBad) bad += 1;

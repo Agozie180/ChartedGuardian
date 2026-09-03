@@ -23,7 +23,21 @@ export const TradeIntentInputSchema = z
     prompt: z.string().optional(),
     source: z.enum(["fixture", "ui", "host_agent"]).optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((value, ctx) => {
+    const quoteValues = [value.amount, value.quoteOrderQty, value.notional_quote].filter(
+      (v): v is number => v !== undefined,
+    );
+    if (quoteValues.length > 1 && new Set(quoteValues).size > 1) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "amount, quoteOrderQty, and notional_quote must agree" });
+    }
+    if (value.type === "LIMIT" && value.limit_price === undefined) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "LIMIT order requires limit_price" });
+    }
+    if (value.quantity !== undefined && quoteValues.length > 0) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "quantity cannot be combined with quote-sized fields" });
+    }
+  });
 
 export type TradeIntentInput = z.infer<typeof TradeIntentInputSchema>;
 

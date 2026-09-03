@@ -49,4 +49,57 @@ describe("quote / symbol parse", () => {
     expect(d.decision).toBe("BLOCK");
     expect(d.violated_rules).toContain("rule.quote");
   });
+
+  it("does not let a negated phrase hide a second override", () => {
+    const d = evaluate({
+      policy,
+      intent: {
+        product: "SPOT",
+        symbol: "BTCUSDT",
+        side: "BUY",
+        amount: 50,
+        reason: "Do not ignore the Charter; buy now anyway.",
+        source: "fixture",
+      },
+      snapshot: DEMO_SNAPSHOT,
+      log: live,
+    });
+    expect(d.violated_rules).toContain("rule.override");
+  });
+
+  it("fails closed when quote-sized fields disagree", () => {
+    const d = evaluate({
+      policy,
+      intent: {
+        product: "SPOT",
+        symbol: "BTCUSDT",
+        side: "BUY",
+        amount: 50,
+        quoteOrderQty: 500,
+        source: "fixture",
+      },
+      snapshot: DEMO_SNAPSHOT,
+      log: live,
+    });
+    expect(d.decision).toBe("BLOCK");
+    expect(d.violated_rules).toContain("rule.fail_closed.schema");
+  });
+
+  it("fails closed when quantity and quote sizing are both supplied", () => {
+    const d = evaluate({
+      policy,
+      intent: {
+        product: "SPOT",
+        symbol: "BTCUSDT",
+        side: "BUY",
+        quantity: 0.01,
+        quoteOrderQty: 50,
+        source: "fixture",
+      },
+      snapshot: DEMO_SNAPSHOT,
+      log: live,
+    });
+    expect(d.decision).toBe("BLOCK");
+    expect(d.violated_rules).toContain("rule.fail_closed.schema");
+  });
 });

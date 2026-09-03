@@ -117,7 +117,7 @@ describe("Guardian filmed / required scenarios", () => {
   it("never calls placeOrder on BLOCK", async () => {
     const { port, calls } = spyPort();
     const d = evaluate({ policy, intent: beats.meme_doge, snapshot: DEMO_SNAPSHOT, log: live });
-    const after = await executeIfApproved({ decision: d, intent: beats.meme_doge, port });
+    const after = await executeIfApproved({ decision: d, intent: beats.meme_doge, port, policy, snapshot: DEMO_SNAPSHOT, log: live });
     expect(after.execution.attempted).toBe(false);
     expect(calls).toHaveLength(0);
   });
@@ -126,7 +126,7 @@ describe("Guardian filmed / required scenarios", () => {
     const { port, calls } = spyPort();
     const log: ViolationLog = { count: 1, status: "LIVE", recent: [{ asset: "DOGE", product: "SPOT" }] };
     const d = evaluate({ policy, intent: beats.meme_doge, snapshot: DEMO_SNAPSHOT, log });
-    const after = await executeIfApproved({ decision: d, intent: beats.meme_doge, port });
+    const after = await executeIfApproved({ decision: d, intent: beats.meme_doge, port, policy, snapshot: DEMO_SNAPSHOT, log });
     expect(d.decision).toBe("QUARANTINE");
     expect(after.execution.attempted).toBe(false);
     expect(calls).toHaveLength(0);
@@ -135,7 +135,7 @@ describe("Guardian filmed / required scenarios", () => {
   it("calls placeOrder only after APPROVE", async () => {
     const { port, calls } = spyPort();
     const d = evaluate({ policy, intent: beats.clean_btc, snapshot: DEMO_SNAPSHOT, log: live });
-    const after = await executeIfApproved({ decision: d, intent: beats.clean_btc, port });
+    const after = await executeIfApproved({ decision: d, intent: beats.clean_btc, port, policy, snapshot: DEMO_SNAPSHOT, log: live });
     expect(d.decision).toBe("APPROVE");
     expect(after.execution.attempted).toBe(true);
     expect(calls).toHaveLength(1);
@@ -157,10 +157,26 @@ describe("Guardian filmed / required scenarios", () => {
       },
     };
     const d = evaluate({ policy, intent: beats.clean_btc, snapshot: DEMO_SNAPSHOT, log: live });
-    const after = await executeIfApproved({ decision: d, intent: beats.clean_btc, port });
+    const after = await executeIfApproved({ decision: d, intent: beats.clean_btc, port, policy, snapshot: DEMO_SNAPSHOT, log: live });
     expect(after.decision).toBe("APPROVE");
     expect(after.execution.ok).toBe(false);
     expect(after.execution.attempted).toBe(true);
+  });
+
+  it("rechecks Guardian before executing a forged approval", async () => {
+    const { port, calls } = spyPort();
+    const approved = evaluate({ policy, intent: beats.clean_btc, snapshot: DEMO_SNAPSHOT, log: live });
+    const forged = { ...approved, intent_id: beats.meme_doge.intent_id };
+    const after = await executeIfApproved({
+      decision: forged,
+      intent: beats.meme_doge,
+      port,
+      policy,
+      snapshot: DEMO_SNAPSHOT,
+      log: live,
+    });
+    expect(after.execution.attempted).toBe(false);
+    expect(calls).toHaveLength(0);
   });
 
   it("fail-closes on a stale/unusable snapshot", () => {
