@@ -33,6 +33,7 @@ export type AgentState = {
   violation_count: number;
   recent: PastIntent[];
   last_decision: Decision | null;
+  last_intent: unknown;
   updated_at: string;
 };
 
@@ -46,6 +47,7 @@ export function defaultAgent(): AgentState {
     violation_count: 0,
     recent: [],
     last_decision: null,
+    last_intent: null,
     updated_at: new Date().toISOString(),
   };
 }
@@ -87,12 +89,18 @@ export function toLog(agent: AgentState): ViolationLog {
   return { count: agent.violation_count, status: agent.status, recent: agent.recent };
 }
 
-export function persistDecision(agent: AgentState, decision: Decision, past: PastIntent): AgentState {
+export function persistDecision(
+  agent: AgentState,
+  decision: Decision,
+  past: PastIntent,
+  intent?: unknown,
+): AgentState {
   const next: AgentState = {
     status: decision.agent_status_after,
     violation_count: decision.violation_count_after,
     recent: [...agent.recent, past].slice(-20),
     last_decision: decision,
+    last_intent: intent ?? null,
     updated_at: new Date().toISOString(),
   };
   saveAgent(next);

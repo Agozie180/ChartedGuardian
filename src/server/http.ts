@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { evaluate } from "../guardian/engine.ts";
 import { compileDemoCharter } from "../policy/fixture-compiler.ts";
 import { beats, type BeatId } from "../trader/beats.ts";
+import { proposeIntent } from "../trader/agent.ts";
 import { executeIfApproved, withSingleFlight } from "../binance/executor.ts";
 import { nullPort } from "../binance/null-port.ts";
 import { recordedPort } from "../binance/recorded-port.ts";
@@ -110,7 +111,7 @@ async function runIntent(intentRaw: unknown) {
         },
       };
 
-  persistDecision(agent, decided, past);
+  persistDecision(agent, decided, past, intentRaw);
   appendAudit(decided, intentRaw);
   if (decided.execution.attempted) invalidateSnapshotCache();
   return decided;
@@ -250,6 +251,17 @@ export function createAppServer() {
         const body = await readJson(req);
         const decided = await withSingleFlight(() => runIntent(body));
         send(res, 200, decided);
+        return;
+      }
+
+      // The reasoning trader proposes; Guardian still decides. The agent runs
+      // OFF the hot path and falls back to a canned intent on any failure, so
+      // this endpoint can never break the deterministic demo.
+      if (req.method === "POST" && url.pathname === "/agent-propose") {
+        const snapshot = await buildSnapshot({ port: portImpl(), mode: mode() });
+        const proposal = await proposeIntent(snapshot);
+        const decided = await withSingleFlight(() => runIntent(proposal.intent));
+        send(res, 200, { proposal, decision: decided });
         return;
       }
 
