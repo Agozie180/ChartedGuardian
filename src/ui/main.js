@@ -13,6 +13,9 @@ const killCopy = document.getElementById("kill-copy");
 const statNav = document.getElementById("stat-nav");
 const statExp = document.getElementById("stat-exp");
 const statLoss = document.getElementById("stat-loss");
+const workflowSource = document.getElementById("workflow-source");
+const workflowGuardian = document.getElementById("workflow-guardian");
+const workflowBinance = document.getElementById("workflow-binance");
 
 const fmtUsd = (n) =>
   typeof n === "number" && Number.isFinite(n)
@@ -93,6 +96,14 @@ function paintState(s) {
     ? `NAV          ${fmtUsd(c.nav_quote)}\ncurrent      ${fmtPct(c.current_exposure_pct)}\nprojected    ${fmtPct(c.projected_exposure_pct)}\ndaily loss   ${fmtPct(c.daily_loss_pct)}`
     : "NAV from fixture (10,000 USDT) until live MCP is authorized.";
   if (s.kill_switch) killCopy.textContent = s.kill_switch.honesty;
+  paintWorkflow(s.workflow);
+}
+
+function paintWorkflow(w) {
+  workflowSource.textContent = w?.source ?? "Waiting for agent";
+  workflowGuardian.textContent = w?.guardian ?? "—";
+  workflowBinance.textContent = w?.binance ?? "Waiting";
+  workflowGuardian.className = w?.guardian ? `workflow-${String(w.guardian).toLowerCase()}` : "";
 }
 
 async function refresh() {
@@ -114,9 +125,10 @@ for (const btn of document.querySelectorAll("button[data-beat]")) {
 document.getElementById("agent-propose").addEventListener("click", async () => {
   intentEl.textContent = "agent is reasoning…";
   const r = await fetch("/agent-propose", { method: "POST" });
-  const { proposal, decision } = await r.json();
+  const { proposal, decision, workflow } = await r.json();
   paintDecision(decision);
   await refresh();
+  paintWorkflow(workflow);
   // Show the agent's own proposal and where it came from — the real handoff.
   intentEl.textContent = JSON.stringify(
     {

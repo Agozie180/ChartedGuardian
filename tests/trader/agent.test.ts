@@ -23,7 +23,7 @@ afterEach(() => {
 });
 
 describe("reasoning trader (proposeIntent)", () => {
-  it("falls back to a valid, schema-clean canned intent when no LLM is configured", async () => {
+  it("falls back to a valid, schema-clean host-agent proposal when no LLM is configured", async () => {
     const p = await proposeIntent(DEMO_SNAPSHOT);
     expect(p.origin).toBe("fallback");
     expect(p.fallback_reason).toMatch(/no LLM/i);
@@ -31,12 +31,11 @@ describe("reasoning trader (proposeIntent)", () => {
     expect(TradeIntentInputSchema.safeParse(p.intent).success).toBe(true);
   });
 
-  it("hands the fallback proposal to Guardian, which BLOCKs the override intent", async () => {
+  it("hands the state-derived fallback proposal to Guardian for approval", async () => {
     const p = await proposeIntent(DEMO_SNAPSHOT);
     const d = evaluate({ policy, intent: p.intent, snapshot: DEMO_SNAPSHOT, log: live });
-    // The canned adversarial proposal is refused deterministically — the agent
-    // proposes, Guardian decides.
-    expect(d.decision).toBe("BLOCK");
+    expect(p.intent.source).toBe("host_agent");
+    expect(d.decision).toBe("APPROVE");
   });
 
   it("falls back (never throws) when the configured LLM endpoint is unreachable", async () => {

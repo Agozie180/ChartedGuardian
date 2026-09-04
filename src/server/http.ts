@@ -55,6 +55,29 @@ function send(res: ServerResponse, status: number, body: unknown) {
   res.end(json);
 }
 
+function workflowTrace(decision: any, intent: any, proposal?: any) {
+  const attempted = decision?.execution?.attempted === true;
+  const source = proposal?.origin === "llm"
+    ? `LLM agent (${proposal.model ?? "configured model"})`
+    : proposal
+      ? "host agent (fallback proposal)"
+      : intent?.source === "host_agent"
+        ? "host agent"
+        : intent?.source === "fixture"
+          ? "demo fixture"
+          : "client";
+  return {
+    source,
+    handoff: "agent -> guardian",
+    guardian: decision?.decision ?? "—",
+    binance: attempted
+      ? `tool called: ${decision.execution.mcp_tool ?? "placeOrder"}`
+      : decision?.decision === "APPROVE"
+        ? "tool not called: execution mode"
+        : "tool not called: guardian gate",
+  };
+}
+
 function mcpResult(id: unknown, result: unknown) {
   return { jsonrpc: "2.0", id, result };
 }
@@ -208,6 +231,9 @@ export function createAppServer() {
           last_decision: agent.last_decision,
           execution_mode: mode(),
           kill_switch: killSwitchInfo(),
+          workflow: agent.last_decision
+            ? workflowTrace(agent.last_decision, agent.last_intent)
+            : null,
           mcp: {
             endpoint: "http://127.0.0.1:8787/mcp (Guardian boundary)",
             transport: "streamable-http",
@@ -261,7 +287,11 @@ export function createAppServer() {
         const snapshot = await buildSnapshot({ port: portImpl(), mode: mode() });
         const proposal = await proposeIntent(snapshot);
         const decided = await withSingleFlight(() => runIntent(proposal.intent));
-        send(res, 200, { proposal, decision: decided });
+        send(res, 200, {
+          proposal,
+          decision: decided,
+          workflow: workflowTrace(decided, proposal.intent, proposal),
+        });
         return;
       }
 
