@@ -21,7 +21,7 @@ A user writes a short Charter:
 4. No leverage.
 5. If the agent violates the Charter twice, quarantine it.
 
-Charter Guardian compiles that once into executable Policy JSON, then evaluates every trade intent **deterministically** (no LLM on the hot path):
+A trade intent can come from a demo button, an MCP client, or the optional **reasoning trader** — an LLM that reads account state and *proposes* a trade (`POST /agent-propose`). The agent only proposes; it never evaluates its own policy. Charter Guardian compiles the Charter once into executable Policy JSON, then evaluates every trade intent **deterministically** (no LLM on the hot path):
 
 | Intent | Decision |
 |---|---|
@@ -44,6 +44,7 @@ Approved actions proceed through Binance Agent OS. Blocked and quarantined actio
 | Withdrawal / transfer **execution** | **Not in the exposed tool surface; never called.** Server docs reference a transfer tool we neither expose nor invoke. |
 | Programmatic disconnect / Emergency Stop as MCP | **UNVERIFIED** — no such tool observed. The Binance kill switch is user-owned UI. |
 | Confirm-before-execute | **Guardian-enforced**, deterministic. Agent-OS autonomy claims CONTRADICTED-IN-SOURCES (TechCrunch vs docs). |
+| Reasoning trader (LLM proposes an intent) | **Optional, off the hot path.** With `LLM_BASE_URL`/`LLM_API_KEY` set, a model *proposes* a trade; Guardian still decides. Unset → deterministic canned proposal. Guardian never runs an LLM. |
 
 We do not invent Binance tool names. Every name above was observed on the live server.
 

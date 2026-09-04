@@ -3,32 +3,65 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>CHARTER GUARDIAN</title>
+    <title>Charter Guardian</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="/ui/styles.css" />
   </head>
   <body>
-    <header>
-      <div>
-        <h1>CHARTER GUARDIAN</h1>
-        <p class="tagline">Give your AI money. Give it a constitution.</p>
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">CG</div>
+        <div class="brand-text">
+          <h1>Charter Guardian</h1>
+          <p class="tagline">Give your AI money. Give it a constitution.</p>
+        </div>
       </div>
       <div class="chips">
-        <span id="status-chip" class="chip live">LIVE</span>
-        <span id="violations" class="chip">violations 0/2</span>
-        <span id="mode-chip" class="chip">MODE off</span>
+        <span id="status-chip" class="chip chip--live">
+          <span class="dot"></span><span id="status-label">Live</span>
+        </span>
+        <span id="violations" class="chip">Violations 0/2</span>
+        <span id="mode-chip" class="chip">Mode off</span>
+        <span id="honesty-chip" class="chip chip--muted">no live order sent</span>
       </div>
     </header>
 
-    <section class="hero" id="hero">
-      <div class="label">LAST DECISION</div>
-      <div id="decision" class="decision idle">—</div>
-      <p id="why">Waiting for an intent. The trader cannot execute. Guardian is the only gate.</p>
+    <section class="verdict" id="hero">
+      <div class="verdict-main">
+        <div class="eyebrow">Last decision</div>
+        <div id="decision" class="verdict-word idle">—</div>
+        <p id="why" class="verdict-why">
+          Waiting for an intent. The trader cannot execute. Guardian is the only gate.
+        </p>
+      </div>
+      <div class="verdict-side">
+        <div class="stat">
+          <span class="stat-label">NAV</span>
+          <span class="stat-value" id="stat-nav">—</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Projected exposure</span>
+          <span class="stat-value" id="stat-exp">—</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Daily loss</span>
+          <span class="stat-value" id="stat-loss">—</span>
+        </div>
+      </div>
     </section>
 
-    <main>
-      <article>
-        <h2>CHARTER</h2>
-        <ol id="charter">
+    <main class="grid">
+      <article class="card">
+        <div class="card-head">
+          <h2>Charter</h2>
+          <span class="card-tag">compiled policy</span>
+        </div>
+        <ol id="charter" class="charter">
           <li>Spot only</li>
           <li>BTC, ETH, BNB only</li>
           <li>Max 10% in one asset</li>
@@ -36,29 +69,44 @@
           <li>Two counting violations → quarantine</li>
         </ol>
       </article>
-      <article>
-        <h2>ACCOUNT / EXPOSURE</h2>
-        <pre id="exposure">NAV —</pre>
+
+      <article class="card">
+        <div class="card-head"><h2>Account &amp; exposure</h2></div>
+        <pre id="exposure" class="data">NAV —</pre>
       </article>
-      <article>
-        <h2>LATEST INTENT</h2>
-        <pre id="intent">none</pre>
+
+      <article class="card">
+        <div class="card-head"><h2>Latest intent</h2></div>
+        <pre id="intent" class="data">none</pre>
       </article>
-      <article>
-        <h2>AUDIT</h2>
-        <pre id="audit">execution.attempted: —</pre>
+
+      <article class="card">
+        <div class="card-head"><h2>Audit trail</h2></div>
+        <pre id="audit" class="data">execution.attempted: —</pre>
       </article>
     </main>
 
-    <nav>
-      <button data-beat="clean_btc">A · Clean BTC 500</button>
-      <button data-beat="meme_doge">B · DOGE 4000</button>
-      <button data-beat="oversized_btc">C · Oversized BTC</button>
-      <button data-beat="override">D · Ignore charter</button>
-      <button data-beat="leverage">E · 10x futures</button>
-      <button id="reset" class="ghost">Reset demo</button>
-      <button id="kill" class="ghost">Binance kill switch</button>
-    </nav>
+    <section class="console">
+      <div class="console-group">
+        <div class="console-label">Trade intents</div>
+        <div class="btn-row">
+          <button data-beat="clean_btc" class="btn">A · Clean BTC 500</button>
+          <button data-beat="meme_doge" class="btn">B · DOGE 4000</button>
+          <button data-beat="oversized_btc" class="btn">C · Oversized BTC</button>
+          <button data-beat="override" class="btn">D · Ignore charter</button>
+          <button data-beat="leverage" class="btn">E · 10x futures</button>
+          <button data-beat="clean_btc" class="btn btn--accent">F · Clean BTC after freeze</button>
+        </div>
+      </div>
+      <div class="console-group">
+        <div class="console-label">Agent &amp; controls</div>
+        <div class="btn-row">
+          <button id="agent-propose" class="btn btn--primary">Agent proposes a trade</button>
+          <button id="reset" class="btn btn--ghost">Reset demo</button>
+          <button id="kill" class="btn btn--ghost">Binance kill switch</button>
+        </div>
+      </div>
+    </section>
 
     <p class="foot" id="kill-copy">
       Guardian freeze is local. Binance disconnect / Emergency stop is user-owned UI until an MCP tool is proven.
