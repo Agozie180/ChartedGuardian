@@ -295,7 +295,7 @@ export function createAppServer() {
         return;
       }
 
-      const demo = url.pathname.match(/^\/demo\/([a-z_]+)$/);
+      const demo = url.pathname.match(/^\/demo\/([a-z0-9_]+)$/);
       if (req.method === "POST" && demo) {
         const id = demo[1] as BeatId;
         if (!(id in beats)) {

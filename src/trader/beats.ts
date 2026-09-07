@@ -12,6 +12,21 @@ export const DEMO_SNAPSHOT = {
 };
 
 export const beats = {
+  clean_btc_5: {
+    intent_id: "beat.clean_btc_5",
+    timestamp: "2026-09-08T18:00:00.000Z",
+    agent_id: "demo-trader",
+    product: "SPOT",
+    asset: "BTC",
+    symbol: "BTCUSDT",
+    side: "BUY",
+    type: "MARKET",
+    amount: 5,
+    quoteOrderQty: 5,
+    notional_quote: 5,
+    reason: "BUY 5 USDT BTC micro-order",
+    source: "fixture",
+  },
   clean_btc: {
     intent_id: "beat.clean_btc",
     timestamp: "2026-09-08T18:00:01.000Z",
